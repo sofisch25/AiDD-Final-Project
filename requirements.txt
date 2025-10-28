@@ -1,0 +1,47 @@
+# Campus Resource Hub - Python Dependencies
+
+# Core Flask Framework
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# Database
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+SQLAlchemy==2.0.21
+
+# Authentication & Security
+Flask-Login==0.6.3
+Flask-WTF==1.1.1
+WTForms==3.0.1
+Werkzeug==2.3.7
+
+# Email Support
+Flask-Mail==0.9.1
+
+# Date/Time Handling
+python-dateutil==2.8.2
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# AI/ML Integration
+openai==0.28.1
+requests==2.31.0
+
+# Development & Testing
+pytest==7.4.2
+pytest-cov==4.1.0
+pytest-flask==1.2.0
+
+# Code Quality
+flake8==6.0.0
+black==23.7.0
+
+# Production Server
+gunicorn==21.2.0
+
+# Additional Utilities
+click==8.1.7
+itsdangerous==2.1.2
+Jinja2==3.1.2
+MarkupSafe==2.1.3
