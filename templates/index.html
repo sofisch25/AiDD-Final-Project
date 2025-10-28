@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Campus Resource Hub{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section bg-primary text-white py-5 rounded mb-5">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">Welcome to Campus Resource Hub</h1>
+        <p class="lead mb-4">Discover, book, and manage campus resources with ease</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form action="{{ url_for('resources') }}" method="GET" class="d-flex gap-2">
+                    <input type="text" name="search" class="form-control form-control-lg" placeholder="Search resources..." value="{{ request.args.get('search', '') }}">
+                    <button type="submit" class="btn btn-light btn-lg">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-5">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-door-open fa-2x text-primary mb-3"></i>
+                <h5 class="card-title">Rooms</h5>
+                <p class="card-text">Conference rooms, study spaces, and meeting areas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-laptop fa-2x text-success mb-3"></i>
+                <h5 class="card-title">Equipment</h5>
+                <p class="card-text">Laptops, projectors, 3D printers, and more</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-map-marker-alt fa-2x text-info mb-3"></i>
+                <h5 class="card-title">Spaces</h5>
+                <p class="card-text">Outdoor areas, pavilions, and event spaces</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-robot fa-2x text-warning mb-3"></i>
+                <h5 class="card-title">AI Assistant</h5>
+                <p class="card-text">Smart recommendations and booking help</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Resources -->
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Featured Resources</h2>
+    </div>
+</div>
+
+<div class="row">
+    {% for resource in featured_resources %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ resource.name }}</h5>
+                    <span class="badge bg-{{ 'success' if resource.is_available else 'secondary' }}">
+                        {{ 'Available' if resource.is_available else 'Unavailable' }}
+                    </span>
+                </div>
+                <p class="card-text text-muted">{{ resource.description[:100] }}{% if resource.description|length > 100 %}...{% endif %}</p>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ resource.location }}
+                    </small>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="fas fa-users me-1"></i>Capacity: {{ resource.capacity }}
+                    </small>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-tag me-1"></i>{{ resource.resource_type.title() }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('resource_detail', resource_id=resource.id) }}" class="btn btn-primary btn-sm">
+                    View Details
+                </a>
+                {% if current_user.is_authenticated and resource.is_available %}
+                <a href="{{ url_for('new_booking', resource_id=resource.id) }}" class="btn btn-outline-primary btn-sm">
+                    Book Now
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not featured_resources %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>
+            No resources available at the moment. Please check back later or contact an administrator.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+{% if current_user.is_authenticated %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-4">Quick Actions</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-plus fa-3x text-primary mb-3"></i>
+                <h5>Make a Booking</h5>
+                <p class="text-muted">Reserve a room or equipment for your needs</p>
+                <a href="{{ url_for('resources') }}" class="btn btn-primary">Browse Resources</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-list fa-3x text-success mb-3"></i>
+                <h5>My Bookings</h5>
+                <p class="text-muted">View and manage your current reservations</p>
+                <a href="{{ url_for('bookings') }}" class="btn btn-success">View Bookings</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h4>Ready to Get Started?</h4>
+                <p class="text-muted mb-4">Sign up for an account to start booking campus resources</p>
+                <a href="{{ url_for('register') }}" class="btn btn-primary me-2">Create Account</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

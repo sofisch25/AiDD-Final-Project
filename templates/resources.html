@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Resources - Campus Resource Hub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Available Resources</h2>
+    <div class="d-flex gap-2">
+        <form action="{{ url_for('resources') }}" method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control" placeholder="Search resources..." value="{{ search_query }}">
+            <input type="hidden" name="type" value="{{ resource_type }}">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Filter by Type
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('resources') }}">All Types</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('resources', type='room') }}">Rooms</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('resources', type='equipment') }}">Equipment</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('resources', type='space') }}">Spaces</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if resource_type %}
+<div class="alert alert-info">
+    <i class="fas fa-filter me-2"></i>
+    Showing {{ resource_type.title() }} resources
+    <a href="{{ url_for('resources') }}" class="btn btn-sm btn-outline-info ms-2">Clear Filter</a>
+</div>
+{% endif %}
+
+<div class="row">
+    {% for resource in resources.items %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ resource.name }}</h5>
+                    <span class="badge bg-{{ 'success' if resource.is_available else 'secondary' }}">
+                        {{ 'Available' if resource.is_available else 'Unavailable' }}
+                    </span>
+                </div>
+                <p class="card-text text-muted">{{ resource.description[:120] }}{% if resource.description|length > 120 %}...{% endif %}</p>
+                
+                <div class="row text-muted small mb-2">
+                    <div class="col-6">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ resource.location }}
+                    </div>
+                    <div class="col-6">
+                        <i class="fas fa-users me-1"></i>Capacity: {{ resource.capacity }}
+                    </div>
+                </div>
+                
+                <div class="row text-muted small mb-3">
+                    <div class="col-6">
+                        <i class="fas fa-tag me-1"></i>{{ resource.resource_type.title() }}
+                    </div>
+                    <div class="col-6">
+                        {% if resource.hourly_rate > 0 %}
+                        <i class="fas fa-dollar-sign me-1"></i>${{ "%.2f"|format(resource.hourly_rate) }}/hr
+                        {% else %}
+                        <i class="fas fa-gift me-1"></i>Free
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if resource.get_average_rating() > 0 %}
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="fas fa-star text-warning"></i>
+                        {{ "%.1f"|format(resource.get_average_rating()) }} ({{ resource.reviews.count() }} reviews)
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('resource_detail', resource_id=resource.id) }}" class="btn btn-primary btn-sm">
+                    View Details
+                </a>
+                {% if current_user.is_authenticated and resource.is_available %}
+                <a href="{{ url_for('new_booking', resource_id=resource.id) }}" class="btn btn-outline-primary btn-sm">
+                    Book Now
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not resources.items %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>
+            {% if search_query %}
+                No resources found matching "{{ search_query }}".
+            {% elif resource_type %}
+                No {{ resource_type }} resources available at the moment.
+            {% else %}
+                No resources available at the moment.
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Pagination -->
+{% if resources.pages > 1 %}
+<nav aria-label="Resources pagination">
+    <ul class="pagination justify-content-center">
+        {% if resources.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('resources', page=resources.prev_num, type=resource_type, search=search_query) }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in resources.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != resources.page %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('resources', page=page_num, type=resource_type, search=search_query) }}">{{ page_num }}</a>
+                </li>
+                {% else %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if resources.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('resources', page=resources.next_num, type=resource_type, search=search_query) }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
